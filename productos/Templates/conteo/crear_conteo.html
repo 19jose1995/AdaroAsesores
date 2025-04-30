@@ -1,0 +1,22 @@
+{% extends 'productos/base.html' %}
+{% block title %}Nuevo Conteo{% endblock %}
+{% block content %}
+<div class="card shadow-sm p-4">
+    <h3 class="mb-4">Crear nueva sesión de conteo</h3>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre del conteo</label>
+            <input type="text" name="nombre" class="form-control" placeholder="Ej. Conteo Mayo 2025" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear</button>
+    </form>
+</div>
+{% endblock %}

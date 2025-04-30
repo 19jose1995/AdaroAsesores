@@ -1,0 +1,60 @@
+{% extends 'productos/base.html' %}
+{% block title %}Registrar Movimiento{% endblock %}
+{% block content %}
+<h2 class="mb-4">Registrar Movimiento de Inventario</h2>
+
+<div class="card shadow-sm p-4">
+    <form method="post" class="row g-3 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label for="codigo_barras" class="form-label">Código de Barras</label>
+            <input type="text" name="codigo_barras" class="form-control" required autofocus placeholder="Escanea o escribe código" value="{{ producto_obj.codigo_barras|default:'' }}">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" name="buscar" class="btn btn-outline-primary w-100">Buscar</button>
+        </div>
+    </form>
+</div>
+
+{% if producto_obj %}
+<div class="card mt-4 border-info">
+    <div class="card-body">
+        <h5 class="card-title text-info">Información del Producto</h5>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Descripción:</strong> {{ producto_obj.descripcion }}</li>
+            <li class="list-group-item"><strong>Referencia:</strong> {{ producto_obj.referencia }}</li>
+            <li class="list-group-item"><strong>Departamento:</strong> {{ producto_obj.departamento }}</li>
+            <li class="list-group-item"><strong>Sección:</strong> {{ producto_obj.seccion }}</li>
+            <li class="list-group-item"><strong>Tipo:</strong> {{ producto_obj.tipo }}</li>
+            <li class="list-group-item"><strong>Stock actual:</strong> {{ producto_obj.stock }}</li>
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% if mostrar_formulario %}
+<div class="card shadow-sm p-4 mt-4">
+    <form method="post" class="row g-3 align-items-end">
+        {% csrf_token %}
+        <input type="hidden" name="codigo_barras" value="{{ producto_obj.codigo_barras }}">
+
+        <div class="col-md-4">
+            <label for="tipo" class="form-label">Tipo</label>
+            <select name="tipo" class="form-select" required>
+                <option value="entrada">Entrada</option>
+                <option value="salida">Salida</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label for="cantidad" class="form-label">Cantidad</label>
+            <input type="number" name="cantidad" class="form-control" min="1" required>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" name="registrar" class="btn btn-success w-100">Registrar</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

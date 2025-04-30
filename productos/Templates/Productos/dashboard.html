@@ -1,0 +1,62 @@
+{% extends 'productos/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4">Dashboard de Inventario</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-bg-primary shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Total de Productos</h5>
+                <p class="card-text fs-3">{{ total_productos }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-success shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Stock Total</h5>
+                <p class="card-text fs-3">{{ total_stock }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-bg-danger shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Stock Bajo (&lt; 10)</h5>
+                <p class="card-text fs-3">{{ stock_bajo|length }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h4 class="mb-3">Últimos Movimientos</h4>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Usuario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in ultimos_movimientos %}
+            <tr>
+                <td>{{ m.fecha|date:"d/m/Y H:i" }}</td>
+                <td>{{ m.producto.descripcion }}</td>
+                <td>{{ m.tipo|capfirst }}</td>
+                <td>{{ m.cantidad }}</td>
+                <td>{{ m.usuario.username }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No hay movimientos recientes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'productos/base.html' %}
+{% block title %}Conteo: {{ conteo.nombre }}{% endblock %}
+{% block content %}
+<h3 class="mb-4">Conteo: {{ conteo.nombre }}</h3>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+{# Botón para cerrar el conteo (solo si aún no está cerrado) #}
+{% if not conteo.cerrado %}
+<form method="post" action="{% url 'cerrar_conteo' conteo.id %}" class="mb-4 d-flex gap-2">
+    {% csrf_token %}
+    <button class="btn btn-outline-danger" onclick="return confirm('¿Estás seguro que deseas cerrar este conteo?')">
+        <i class="bi bi-lock"></i> Cerrar conteo
+    </button>
+</form>
+{% endif %}
+
+{# Botón para descargar PDF (solo si el conteo está cerrado) #}
+{% if conteo.cerrado %}
+<a href="{% url 'reporte_conteo_pdf' conteo.id %}" class="btn btn-secondary mb-3">
+    <i class="bi bi-file-earmark-pdf"></i> Descargar reporte PDF
+</a>
+
+<form method="post" action="{% url 'ajustar_stock_conteo' conteo.id %}">
+    {% csrf_token %}
+    <button class="btn btn-success mt-2" onclick="return confirm('¿Estás seguro que deseas ajustar el stock del sistema?')">
+        <i class="bi bi-check-circle"></i> Confirmar y ajustar stock
+    </button>
+</form>
+{% endif %}
+
+{# Formulario para escanear producto (solo si está abierto) #}
+{% if not conteo.cerrado %}
+<form method="post" class="row g-3 mb-4">
+    {% csrf_token %}
+    <div class="col-md-4">
+        <input type="text" name="codigo_barras" class="form-control" placeholder="Escanea o escribe el código" required>
+    </div>
+    <div class="col-md-3">
+        <input type="number" name="cantidad" class="form-control" placeholder="Cantidad" min="1" required>
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Agregar</button>
+    </div>
+</form>
+{% endif %}
+
+<h5>Productos contados</h5>
+<table class="table table-bordered table-sm mt-3">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Código</th>
+            <th>Cantidad</th>
+            <th>Fecha</th>
+            <th>Usuario</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.producto.descripcion }}</td>
+            <td>{{ item.producto.codigo_barras }}</td>
+            <td>{{ item.cantidad_contada }}</td>
+            <td>{{ item.fecha|date:"d/m/Y H:i" }}</td>
+            <td>{{ item.usuario }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted">No hay productos contados aún.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{# Comparativo de stock vs conteo #}
+{% if conteo.cerrado and conteo_totales %}
+<h5 class="mt-5">Comparación con stock del sistema</h5>
+<table class="table table-bordered table-sm">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Stock sistema</th>
+            <th>Total contado</th>
+            <th>Diferencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in conteo_totales %}
+        <tr>
+            <td>{{ p.descripcion }}</td>
+            <td>{{ p.stock }}</td>
+            <td>{{ p.contado }}</td>
+            <td class="{% if p.diferencia != 0 %}text-danger fw-bold{% endif %}">
+                {{ p.diferencia }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}

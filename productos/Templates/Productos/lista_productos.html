@@ -1,0 +1,150 @@
+{% extends 'productos/base.html' %}
+{% block title %}Lista de Productos{% endblock %}
+{% block content %}
+<h2 class="mb-4">Productos Registrados</h2>
+
+<div class="card shadow-sm p-4 mb-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <input type="text" name="q" class="form-control" placeholder="Buscar descripción o código" value="{{ query }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="departamento" class="form-control" placeholder="Departamento" value="{{ filtro_departamento }}">
+        </div>
+        <div class="col-md-3">
+            <input type="text" name="seccion" class="form-control" placeholder="Sección" value="{{ filtro_seccion }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">🔍 Filtrar</button>
+        </div>
+    </form>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Referencia</th>
+                        <th>Departamento</th>
+                        <th>Sección</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th>Stock</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr>
+                        <td>{{ producto.codigo_barras }}</td>
+                        <td>{{ producto.referencia }}</td>
+                        <td>{{ producto.departamento }}</td>
+                        <td>{{ producto.seccion }}</td>
+                        <td>{{ producto.descripcion }}</td>
+                        <td>{{ producto.tipo }}</td>
+                        <td>{{ producto.stock }}</td>
+                        <td class="text-center">
+                            <a href="/movimientos/crear/?codigo={{ producto.codigo_barras }}&autobuscar=1" class="btn btn-sm btn-success me-1">
+                                <i class="bi bi-box-arrow-in-down"></i> Movimiento
+                            </a>
+                            <button type="button" class="btn btn-sm btn-secondary me-1" data-bs-toggle="modal" data-bs-target="#modalEditar{{ producto.id }}">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </button>
+                            <a href="{% url 'generar_etiqueta' producto.id %}" class="btn btn-sm btn-outline-dark mt-1">
+                                <i class="bi bi-printer"></i> Etiqueta
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Modal para editar producto -->
+                    <div class="modal fade" id="modalEditar{{ producto.id }}" tabindex="-1" aria-labelledby="modalEditarLabel{{ producto.id }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="post" action="/productos/editar/{{ producto.id }}/">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalEditarLabel{{ producto.id }}">Editar Producto</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Descripción</label>
+                                            <input type="text" name="descripcion" class="form-control" value="{{ producto.descripcion }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Referencia</label>
+                                            <input type="text" name="referencia" class="form-control" value="{{ producto.referencia }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Departamento</label>
+                                            <input type="text" name="departamento" class="form-control" value="{{ producto.departamento }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Sección</label>
+                                            <input type="text" name="seccion" class="form-control" value="{{ producto.seccion }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tipo</label>
+                                            <input type="text" name="tipo" class="form-control" value="{{ producto.tipo }}">
+                                        </div>
+                                        <div class="alert alert-warning small">
+                                            El stock solo se modifica desde el módulo de movimientos.
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4 d-flex justify-content-center">
+            <nav>
+                <ul class="pagination">
+                    {% if productos.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ productos.previous_page_number }}&q={{ query }}&departamento={{ filtro_departamento }}&seccion={{ filtro_seccion }}&tipo={{ filtro_tipo }}">
+                            &laquo;
+                        </a>
+                    </li>
+                    {% endif %}
+        
+                    {% for num in productos.paginator.page_range %}
+                        {% if productos.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num >= productos.number|add:-2 and num <= productos.number|add:2 %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}&q={{ query }}&departamento={{ filtro_departamento }}&seccion={{ filtro_seccion }}&tipo={{ filtro_tipo }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+        
+                    {% if productos.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ productos.next_page_number }}&q={{ query }}&departamento={{ filtro_departamento }}&seccion={{ filtro_seccion }}&tipo={{ filtro_tipo }}">
+                            &raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <div class="text-muted small mb-2">
+            Mostrando {{ productos.start_index }} – {{ productos.end_index }} de {{ productos.paginator.count }} productos
+        </div>        
+    </div>
+</div>
+
+<!-- Iconos de Bootstrap y scripts de modales -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}

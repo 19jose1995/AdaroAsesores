@@ -1,0 +1,57 @@
+{% extends 'productos/base.html' %}
+{% block title %}Detalle del Producto{% endblock %}
+{% block content %}
+<div class="card shadow-sm p-4">
+    <h3 class="mb-3">{{ producto.descripcion }}</h3>
+
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>Código de barras:</strong> {{ producto.codigo_barras }}</li>
+        <li class="list-group-item"><strong>Referencia:</strong> {{ producto.referencia }}</li>
+        <li class="list-group-item"><strong>Departamento:</strong> {{ producto.departamento }}</li>
+        <li class="list-group-item"><strong>Sección:</strong> {{ producto.seccion }}</li>
+        <li class="list-group-item"><strong>Tipo:</strong> {{ producto.tipo }}</li>
+        <li class="list-group-item"><strong>Stock actual:</strong> {{ producto.stock }}</li>
+    </ul>
+
+    <div class="mt-4">
+        <a href="/movimientos/crear/?codigo={{ producto.codigo_barras }}&autobuscar=1" class="btn btn-success me-2">Registrar Movimiento</a>
+        <a href="{% url 'generar_etiqueta' producto.id %}" class="btn btn-outline-dark">Generar Etiqueta</a>
+    </div>
+</div>
+{% endblock %}
+<div class="mt-5">
+    <h5>Historial de movimientos recientes</h5>
+    <canvas id="graficoMovimientos" height="100"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('graficoMovimientos').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ datos.fechas|safe }},
+            datasets: [
+                {
+                    label: 'Entradas',
+                    data: {{ datos.entradas|safe }},
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)'
+                },
+                {
+                    label: 'Salidas',
+                    data: {{ datos.salidas|safe }},
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>
